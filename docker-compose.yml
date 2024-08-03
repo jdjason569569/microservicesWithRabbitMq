@@ -1,0 +1,36 @@
+version: '3'
+
+services:
+ nestjs-rabbitmq:
+   container_name: nestjs-rabbitmq
+   image: rabbitmq:3-management
+   ports:
+    - '5672:5672'
+    - '15672:15672'
+
+ client-gateway:
+   build: ./gateway
+   ports:
+   - "3000:3000"
+   volumes:
+   - ./gateway/src:/usr/src/app/src
+   command: npm run start:dev
+   environment:
+    - PORT=3000
+    - QUEUE=amqp://nestjs-rabbitmq:5672
+  
+ users-mc:
+   build: ./micro-users
+   volumes:
+   - ./micro-users/src:/usr/src/app/src
+   command: npm run start:dev
+   environment:
+    - QUEUE=amqp://nestjs-rabbitmq:5672
+
+ products-mc:
+   build: ./nest-micro-bases-main
+   volumes:
+   - ./nest-micro-bases-main/src:/usr/src/app/src
+   command: npm run start:dev
+   environment:
+    - QUEUE=amqp://nestjs-rabbitmq:5672
